@@ -8,3 +8,10 @@ install:
 
 before_script:
   - echo "<?php require_once __DIR__ . '/vendor/autoload.php';" > ./autoload.php.dist
+
+script:
+  - mkdir -p build/logs
+  - phpunit --coverage-clover build/logs/clover.xml
+
+after_script:
+  - php vendor/bin/coveralls -v
