@@ -2,3 +2,6 @@ language: php
 php:
   - 5.5
   - 5.4
+install:
+  - sudo apt-get install parallel
+  - composer install --dev --prefer-source
