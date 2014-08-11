@@ -69,7 +69,11 @@ class Crawler implements CrawlerInterface{
         }
         $this->type = strtolower($type);
         $this->encoding = strtolower($encoding);
-        $domDocument = $this->getDomDocumentFromHtmlContent($content, $this->encoding);
+        if (self::TYPE_XML === $this->type) {
+            $domDocument = $this->getDomDocumentFromXmlContent($content, $this->encoding);
+        } else {
+            $domDocument = $this->getDomDocumentFromHtmlContent($content, $this->encoding);
+        }
         $this->domXpath = new \DOMXPath($domDocument);
         return $this;
     }
@@ -203,11 +207,37 @@ class Crawler implements CrawlerInterface{
         return $dom;
     }
 
+    /**
+     * Transform the content(string) in a DomDocument.
+     * @param string $content
+     * @param string $encoding
+     * @return \DOMDocument
+     */
+    protected function getDomDocumentFromXmlContent($content, $encoding) {
+
+        libxml_use_internal_errors(true);
+        libxml_disable_entity_loader(true);
+
+        $dom = new \DOMDocument('1.0', $encoding);
+        $content = trim($content);
+        if ('' !== $content) {
+            $content = $this->removeDefaultNamespace($content);
+            @$dom->loadXML($content, LIBXML_COMPACT|LIBXML_HTML_NODEFDTD|LIBXML_NONET|LIBXML_NSCLEAN);
+        }
+        libxml_use_internal_errors(false);
+        libxml_disable_entity_loader(false);
+        return $dom;
+    }
+
+    function removeDefaultNamespace($content) {
+        $content =  preg_replace("~\s(xmlns=[\"'].*[\"'])~", "", $content);
+        return $content;
+    }
+
     protected function getNullDomElement(){
         $nullNode = new \DOMDocument("1.0");
         $nullNode->createElement("::null::", null);
         return $nullNode;
-
     }
 
 }

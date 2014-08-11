@@ -13,4 +13,8 @@
         <f:width>80</f:width>
         <f:length>120</f:length>
     </f:table>
+    <nonamespace>
+        <id>4</id>
+        <title>test no default namespace</title>
+    </nonamespace>
 </root>

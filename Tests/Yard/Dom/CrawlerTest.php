@@ -171,6 +171,23 @@ class CrawlerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(array(), $object->query("//node-that-does-not-exist")->toArray());
     }
 
+    public function testXmlType() {
+        $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec);
+        $this->assertEquals("xml", $this->getPrivateProperty("\Yard\Dom\Crawler", "type")->getValue($object));
+    }
+
+    public function testXmlEncoding() {
+        $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec);
+        $this->assertEquals("utf-8", $this->getPrivateProperty("\Yard\Dom\Crawler", "encoding")->getValue($object));
+    }
+
+    public function testXmlNamespacedQuery() {
+        $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec);
+        $this->assertEquals("80", $object->query("//f:width")->toString());
+        $this->assertEquals(array("Apples","Bananas"), $object->query("//h:td")->toArray());
+        $this->assertEquals("test no default namespace", $object->query("//title")->toString());
+    }
+
 
     /**
      * getPrivateMethod method
