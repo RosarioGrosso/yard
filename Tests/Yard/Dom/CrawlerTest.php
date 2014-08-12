@@ -188,6 +188,45 @@ class CrawlerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("test no default namespace", $object->query("//title")->toString());
     }
 
+    public function testAndQuery() {
+        $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec);
+        $res = $object
+            ->query("//nonamespace//id")
+            ->andQuery("//nonamespace//title")
+            ->andQuery("//h:td")
+            ->andQuery("//f:length")
+            ->toArray();
+        $this->assertEquals(
+            array("Apples", "Bananas", 120, 4, "test no default namespace"),
+            $res
+        );
+    }
+
+    public function testCleanXpathProperty() {
+        $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec);
+        // before query it must be null;
+        $this->assertNull(
+            $this->getPrivateProperty("\Yard\Dom\Crawler", "xpath")->getValue($object)
+        );
+        $res = $object->query("//nonamespace//id");
+        // it must contains the first xpath
+        $this->assertEquals(
+            "//nonamespace//id",
+            $this->getPrivateProperty("\Yard\Dom\Crawler", "xpath")->getValue($object)
+        );
+        $res = $res->andQuery("//a");
+        // it must contains the 2 xpaths (query() and andQuery() methods)
+        $this->assertEquals(
+            "//nonamespace//id | //a",
+            $this->getPrivateProperty("\Yard\Dom\Crawler", "xpath")->getValue($object)
+        );
+        $res->toArray();
+        // it must be null again
+        $this->assertNull(
+            $this->getPrivateProperty("\Yard\Dom\Crawler", "xpath")->getValue($object)
+        );
+    }
+
 
     /**
      * getPrivateMethod method

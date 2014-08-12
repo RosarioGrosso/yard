@@ -8,14 +8,15 @@
 
 namespace Yard\Dom;
 
-
 interface CrawlerInterface {
-
-    public function query($xpathQuery);
-    public function context($xpathQuery);
+    public function query($xpath);
+    public function context($xpath);
+    public function cssQuery($css);
+    public function cssContext($css);
+    public function andQuery($xpath);
+    public function orQuery($xpath);
     public function toString();
     public function toArray();
     public function each(\Closure $closure);
-    public function trim($xpathQuery);
-
+    public function trim($characterMask);
 }

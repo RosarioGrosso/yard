@@ -49,6 +49,13 @@ class Crawler implements CrawlerInterface{
      */
     protected $domNodeList      = null;
 
+    /**
+     * Contains the xpath passed to query method.
+     * It is useful to perform query like andQuery and orQuery
+     * @var Component\DomNodeList $domNodeList
+     */
+    protected $xpath            = null;
+
 
     public function __construct($content = null, $encoding = null, $type = null){
         if (!is_null($content)) {
@@ -79,6 +86,7 @@ class Crawler implements CrawlerInterface{
     }
 
     public function query($xpath) {
+        $this->xpath = $xpath;
         $this->domNodeList = new DomNodeList();
         if ( null === $this->contextNodesList ) {
             $res = $this->domXpath->query($xpath);
@@ -105,7 +113,38 @@ class Crawler implements CrawlerInterface{
         return $this;
     }
 
+    /**
+     * Select all the xpath passed in the first query and the following one or more andXpath.
+     *
+     * @param string $xpath
+     * @return $this
+     * @throws CrawlerException
+     */
+    public function andQuery($xpath) {
+        if (empty($this->xpath)) {
+            throw new CrawlerException("query() method MUST be executed before the andQuery()");
+        }
+        return $this->query(sprintf("%s | %s", $this->xpath, $xpath));
+    }
+
+    /**
+     * Exec the query inside this statement only if the previous one has 0 result or empty node.
+     * @param $xpath
+     */
+    public function orQuery($xpath) {
+        if ($this->domNodeList->count() > 0) {
+            foreach ($this->domNodeList as $node) {
+                if (null !== $node->nodeValue && '' !== $node->nodeValue) {
+                    return $this;
+                }
+            }
+        }
+        return $this->query($xpath);
+    }
+
+
     public function context($xpath) {
+        $this->xpath = null;
         $tmpList = $this->domXpath->query($xpath);
         $this->contextNodesList = new DomNodeList();
         foreach ($tmpList as $node) {
@@ -115,6 +154,7 @@ class Crawler implements CrawlerInterface{
     }
 
     public function each(\Closure $closure) {
+        $this->xpath = null;
         $aData = array();
         foreach ($this->domNodeList as $k => $node) {
             $aData[] = $closure($node, $k);
@@ -128,10 +168,25 @@ class Crawler implements CrawlerInterface{
         }
         return $this;
     }
-    public function cssQuery($xpath) {}
-    public function cssContextQuery($contextXPath, $xpath) {}
+
+    public function cssQuery($css) {
+        if (!class_exists('Symfony\\Component\\CssSelector\\CssSelector')) {
+            throw new CrawlerException("Include Symfony\\Component\\CssSelector\\CssSelector to use this method");
+        }
+        $xpath = \Symfony\Component\CssSelector\CssSelector::toXPath($css);
+        return $this->query($xpath);
+    }
+
+    public function cssContext($css) {
+        if (!class_exists('Symfony\\Component\\CssSelector\\CssSelector')) {
+            throw new CrawlerException("Include Symfony\\Component\\CssSelector\\CssSelector to use this method");
+        }
+        $xpath = \Symfony\Component\CssSelector\CssSelector::toXPath($css);
+        return $this->context($xpath);
+    }
 
     public function toString() {
+        $this->xpath = null;
         $sRet = null;
         foreach ($this->domNodeList as $node) {
             $sRet = $node->nodeValue;
@@ -140,6 +195,7 @@ class Crawler implements CrawlerInterface{
         return $sRet;
     }
     public function toArray() {
+        $this->xpath = null;
         $aRet = array();
         if (0 === $this->domNodeList->count()) {
             return $aRet;
@@ -178,8 +234,8 @@ class Crawler implements CrawlerInterface{
     }
 
     /**
-     * Transform the content(string) in a DomDocument.
-     * @param string $content
+     * Transform the (x)html content(string) in a DomDocument.
+     * @param string $content - (x)html
      * @param string $encoding
      * @return \DOMDocument
      */
@@ -208,8 +264,8 @@ class Crawler implements CrawlerInterface{
     }
 
     /**
-     * Transform the content(string) in a DomDocument.
-     * @param string $content
+     * Transform the xml content(string) in a DomDocument.
+     * @param string $content - (xml)
      * @param string $encoding
      * @return \DOMDocument
      */
