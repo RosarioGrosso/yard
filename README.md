@@ -1,4 +1,4 @@
-### Welcome to the *Yard Framework 1.0* Release!
+### Welcome to the *Yard Framework 1.0* Unstable Release!
 
 
 Master:
@@ -6,8 +6,11 @@ Master:
 [![Coverage Status](https://img.shields.io/coveralls/RosarioGrosso/yard.svg)](https://coveralls.io/r/RosarioGrosso/yard)
 ## RELEASE INFORMATION
 
-*Yard Framework 1.0.0dev*
+*Yard Framework 0.0.9dev* [unstable]
 
-This is the first maintenance release for the version 1.0 series.
+Please do not use yet, we are at the initial development stage and the public API should not be considered stable.
 
-DD MMM YYYY
+
+ Available Classes:
+
+   * Yard\Dom\Crawler
