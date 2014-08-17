@@ -171,7 +171,9 @@ class Crawler implements CrawlerInterface{
 
     public function cssQuery($css) {
         if (!class_exists('Symfony\\Component\\CssSelector\\CssSelector')) {
+            // @codeCoverageIgnoreStart
             throw new CrawlerException("Include Symfony\\Component\\CssSelector\\CssSelector to use this method");
+            // @codeCoverageIgnoreEnd
         }
         $xpath = \Symfony\Component\CssSelector\CssSelector::toXPath($css);
         return $this->query($xpath);
@@ -179,7 +181,9 @@ class Crawler implements CrawlerInterface{
 
     public function cssContext($css) {
         if (!class_exists('Symfony\\Component\\CssSelector\\CssSelector')) {
+            // @codeCoverageIgnoreStart
             throw new CrawlerException("Include Symfony\\Component\\CssSelector\\CssSelector to use this method");
+            // @codeCoverageIgnoreEnd
         }
         $xpath = \Symfony\Component\CssSelector\CssSelector::toXPath($css);
         return $this->context($xpath);

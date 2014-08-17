@@ -24,7 +24,6 @@ class CrawlerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("html", $this->getPrivateProperty("\Yard\Dom\Crawler", "type")->getValue($object));
         $this->assertEquals("utf-8", $this->getPrivateProperty("\Yard\Dom\Crawler", "encoding")->getValue($object));
 //        $this->assertEquals("html", PHPUnit_Framework_Assert::readAttribute($object, 'type'));
-
     }
 
     public function testClassConstants(){
@@ -48,6 +47,7 @@ class CrawlerTest extends PHPUnit_Framework_TestCase {
             $object->query("//p[@class='skill']")->toArray()
         );
     }
+
 
     public function testXpathString() {
         $object = new \Yard\Dom\Crawler($this->html_no_enc);
@@ -158,7 +158,25 @@ class CrawlerTest extends PHPUnit_Framework_TestCase {
             $object->query("//div[contains(concat(' ', normalize-space(text()), ' '), ' Hometown: ')]/following-sibling::div[1]/a/text()")
                 ->toString()
         );
+    }
 
+    public function testCssQuery() {
+        $object = new \Yard\Dom\Crawler($this->html_vk);
+        $this->assertEquals(
+            "Forgot your password?",
+            $object->cssQuery("#quick_forgot")
+                ->toString()
+        );
+    }
+
+    public function testCssContext() {
+        $object = new \Yard\Dom\Crawler($this->html_no_enc);
+        $this->assertEquals(
+            array('Company 1 ltd', null, 'Company 3 ltd'),
+            $object->cssContext(".experience")
+                ->cssQuery(".org")
+                ->toArray()
+        );
     }
 
     public function testEmptyStringQuery() {
@@ -188,6 +206,62 @@ class CrawlerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("test no default namespace", $object->query("//title")->toString());
     }
 
+    public function testOrQuery() {
+        $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec);
+        $res = $object
+            ->query("//nonamespace//fakenode")
+            ->orQuery("//nonamespace//otherfakenode")
+            ->orQuery("//h:td")
+            ->orQuery("//nonamespace")
+            ->toArray();
+        $this->assertEquals(
+            array("Apples", "Bananas"),
+            $res
+        );
+
+        /** INSERT TEST FOR STRING */
+        $res = $object
+            ->query("//nonamespace//fakenode")
+            ->orQuery("//h:td")
+            ->orQuery("//h:td[2]")
+            ->toString();
+        $this->assertEquals(
+            "Apples",
+            $res
+        );
+
+        /** TEST FOR ALL NODES EMPTY */
+        $res = $object
+            ->query("//nonamespace//fakenode")
+            ->orQuery("//nonamespace//otherfakenode")
+            ->toString();
+        $this->assertEquals(
+            null,
+            $res
+        );
+
+        $object = new \Yard\Dom\Crawler($this->html_no_enc);
+        $res = $object
+            ->query("//*[@class='followers']")
+            ->orQuery("//nonamespace//otherfakenode")
+            ->orQuery("//*[@class='following']")
+            ->toString();
+        $this->assertEquals(
+            200,
+            $res
+        );
+
+        $res = $object
+            ->query("//*[@class='empty-string']")
+            ->orQuery("//nonamespace//otherfakenode")
+            ->orQuery("//*[@class='followers']")
+            ->toString();
+        $this->assertEquals(
+            200,
+            $res
+        );
+    }
+
     public function testAndQuery() {
         $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec);
         $res = $object
@@ -200,6 +274,31 @@ class CrawlerTest extends PHPUnit_Framework_TestCase {
             array("Apples", "Bananas", 120, 4, "test no default namespace"),
             $res
         );
+
+        /** @TODO fix order for AndQuery */
+//        $res = $object
+//            ->query("//nonamespace//id")
+//            ->andQuery("//nonamespace//title")
+//            ->andQuery("//h:td")
+//            ->andQuery("//f:length")
+//            ->toString();
+//        $this->assertEquals(
+//            "4",
+//            $res
+//        );
+
+    }
+
+    /**
+     * @expectedException \Yard\Dom\CrawlerException
+     */
+    public function testAndQueryException() {
+        $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec);
+        $object
+            ->andQuery("//nonamespace//title")
+            ->andQuery("//h:td")
+            ->andQuery("//f:length")
+            ->toArray();
     }
 
     public function testCleanXpathProperty() {
