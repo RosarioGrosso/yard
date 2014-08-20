@@ -11,40 +11,51 @@ use Yard\Dom\Component\DomNodeList;
 
 class Crawler implements CrawlerInterface{
 
+    /**
+     * String value for xml document.
+     */
     const TYPE_XML              = 'xml';
+
+    /**
+     * String value for (x)html document.
+     */
     const TYPE_HTML             = 'html';
 
     /**
-     * @var Component\DomNodeList $contextNodesList
+     * If a context search will be performed,
+     * the query method will use this NodeList as base for the query and not the full html/xml.
+     *
+     * @var DomNodeList $contextNodesList
      */
     protected $contextNodesList = null;
 
     /**
-     * Define the type of document (xml|html|xhtml). Look at TYPE_* constants.
+     * Define the type of document (xml|html). Look at TYPE_* constants for a list.
      * @var string $type
      */
     protected $type             = null;
 
     /**
-     * Document encoding
+     * Document encoding (ISO-8859-1, UTF-8 and so on)
      * @var string $encoding
      */
     protected $encoding         = null;
 
     /**
      * If no encoding is passed or discovered, this one will be used.
+     * auto let the DomDocument
      * @var string $encoding
      */
-//    protected $defaultEncoding  = "UTF-8";
     protected $defaultEncoding  = "auto";
 
     /**
+     * Hold the DomXPath Object.
      * @var \DomXPath $domXpath
      */
     protected $domXpath         = null;
 
     /**
-     * Contains the resulting nodelist.
+     * Hold the result of a query.
      * @var Component\DomNodeList $domNodeList
      */
     protected $domNodeList      = null;
@@ -57,12 +68,25 @@ class Crawler implements CrawlerInterface{
     protected $xpath            = null;
 
 
+    /**
+     * @param string $content   - The (X)HTML or XML Content.
+     * @param string $encoding  - The encoding of the document, if null it will guessed from the document.
+     * @param string $type      - HTML Document or XML Document Crawler::TYPE_XML or Crawler::TYPE_HTML
+     */
     public function __construct($content = null, $encoding = null, $type = null){
         if (!is_null($content)) {
             $this->loadContent($content, $encoding, $type);
         }
     }
 
+    /**
+     * Load the document and initialize the class to be ready for queries.
+     *
+     * @param string $content   - The (X)HTML or XML Content.
+     * @param string $encoding  - The encoding of the document, if null it will guessed from the document.
+     * @param string $type      - HTML Document or XML Document Crawler::TYPE_XML or Crawler::TYPE_HTML
+     * @return $this
+     */
     public function loadContent($content, $encoding = null, $type = null) {
         if (is_null($type)){
             $type = $this->guessType($content);
@@ -85,6 +109,11 @@ class Crawler implements CrawlerInterface{
         return $this;
     }
 
+    /**
+     * Performs a query to extract nodes from the document.
+     * @param string $xpath - XPath query as a string.
+     * @return $this
+     */
     public function query($xpath) {
         $this->xpath = $xpath;
         $this->domNodeList = new DomNodeList();
@@ -114,7 +143,8 @@ class Crawler implements CrawlerInterface{
     }
 
     /**
-     * Select all the xpath passed in the first query and the following one or more andXpath.
+     * If you need to extract more than one node in the same query, you can use a mix of "OR" or "|" XPath statements or,
+     * you can use this method to retrieve different nodes into the same query results.
      *
      * @param string $xpath
      * @return $this
@@ -128,8 +158,10 @@ class Crawler implements CrawlerInterface{
     }
 
     /**
-     * Exec the query inside this statement only if the previous one has 0 result or empty node.
+     * Execute this query only if the previous one has returned Zero Elements or empty nodes.
+     *
      * @param $xpath
+     * @return $this
      */
     public function orQuery($xpath) {
         if ($this->domNodeList->count() > 0) {
@@ -142,7 +174,13 @@ class Crawler implements CrawlerInterface{
         return $this->query($xpath);
     }
 
-
+    /**
+     * Use a context for the query. This means that the query will be performed using the context result as Document
+     * and not the whole html document.
+     *
+     * @param string $xpath
+     * @return $this
+     */
     public function context($xpath) {
         $this->xpath = null;
         $tmpList = $this->domXpath->query($xpath);
@@ -153,6 +191,12 @@ class Crawler implements CrawlerInterface{
         return $this;
     }
 
+    /**
+     * forEach statement for the NodeList.
+     *
+     * @param callable $closure
+     * @return array
+     */
     public function each(\Closure $closure) {
         $this->xpath = null;
         $aData = array();
@@ -162,6 +206,12 @@ class Crawler implements CrawlerInterface{
         return $aData;
     }
 
+    /**
+     * wrap of the php trim to be use on a nodeList.
+     *
+     * @param string $characterMask
+     * @return $this
+     */
     public function trim($characterMask = null) {
         foreach ($this->domNodeList as $node) {
             $node->nodeValue = is_null($characterMask) ? trim($node->nodeValue) : trim($node->nodeValue, $characterMask);
@@ -169,6 +219,13 @@ class Crawler implements CrawlerInterface{
         return $this;
     }
 
+    /**
+     * Same as query method but using css.
+     *
+     * @param string $css
+     * @return $this
+     * @throws CrawlerException
+     */
     public function cssQuery($css) {
         if (!class_exists('Symfony\\Component\\CssSelector\\CssSelector')) {
             // @codeCoverageIgnoreStart
@@ -179,6 +236,13 @@ class Crawler implements CrawlerInterface{
         return $this->query($xpath);
     }
 
+    /**
+     * Same as context method but use a css instead of a xpath value.
+     *
+     * @param string $css
+     * @return $this
+     * @throws CrawlerException
+     */
     public function cssContext($css) {
         if (!class_exists('Symfony\\Component\\CssSelector\\CssSelector')) {
             // @codeCoverageIgnoreStart
@@ -189,6 +253,11 @@ class Crawler implements CrawlerInterface{
         return $this->context($xpath);
     }
 
+    /**
+     * Force the result to be represented as string.
+     *
+     * @return string|null
+     */
     public function toString() {
         $this->xpath = null;
         $sRet = null;
@@ -198,6 +267,12 @@ class Crawler implements CrawlerInterface{
         }
         return $sRet;
     }
+
+    /**
+     * Force the result to be represented as an array.
+     *
+     * @return array
+     */
     public function toArray() {
         $this->xpath = null;
         $aRet = array();
@@ -224,7 +299,8 @@ class Crawler implements CrawlerInterface{
     }
 
     /**
-     * Guess the Document encoding.
+     * Try to guess the Document encoding from its contents.
+     *
      * @param string $content
      * @return null|string
      */
@@ -289,11 +365,20 @@ class Crawler implements CrawlerInterface{
         return $dom;
     }
 
+    /**
+     * Remove the default namespace to simplify query on default nodes.
+     * @param $content
+     * @return mixed
+     */
     function removeDefaultNamespace($content) {
         $content =  preg_replace("~\s(xmlns=[\"'].*[\"'])~", "", $content);
         return $content;
     }
 
+    /**
+     * return a Null DomDocument, useful to manage query to elements that do not exist inside the target document.
+     * @return \DOMDocument
+     */
     protected function getNullDomElement(){
         $nullNode = new \DOMDocument("1.0");
         $nullNode->createElement("::null::", null);
