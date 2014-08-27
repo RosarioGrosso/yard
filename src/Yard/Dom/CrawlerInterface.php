@@ -17,6 +17,7 @@ interface CrawlerInterface {
     public function orQuery($xpath);
     public function toString();
     public function toArray();
-    public function each(\Closure $closure);
+    public function replace($match, $replace);
+    public function filter(\Closure $closure);
     public function trim($characterMask);
 }

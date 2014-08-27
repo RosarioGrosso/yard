@@ -79,6 +79,13 @@ class Crawler implements CrawlerInterface{
         }
     }
 
+    public function replace($search, $replace) {
+        foreach ($this->domNodeList as $node) {
+            $node->nodeValue = preg_replace($search, $replace, $node->nodeValue);
+        }
+        return $this;
+    }
+
     /**
      * Load the document and initialize the class to be ready for queries.
      *
@@ -192,18 +199,21 @@ class Crawler implements CrawlerInterface{
     }
 
     /**
-     * forEach statement for the NodeList.
+     * filter elements into the NodeList.
+     * if the callback return false or null the value will be removed.
      *
      * @param callable $closure
-     * @return array
+     * @return $this
      */
-    public function each(\Closure $closure) {
+    public function filter(\Closure $closure) {
         $this->xpath = null;
-        $aData = array();
-        foreach ($this->domNodeList as $k => $node) {
-            $aData[] = $closure($node, $k);
+        foreach ($this->domNodeList as $node) {
+            $res = $closure($node);
+            if (false === $res || null === $res) {
+                $this->domNodeList->detach($node);
+            }
         }
-        return $aData;
+        return $this;
     }
 
     /**

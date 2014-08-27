@@ -60,21 +60,6 @@ class CrawlerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('Java, J2EE, SOLR, Tomcat, JBoss, ', $object->query("//div[@id='right-column']/div[3]/p[3]")->toString());
     }
 
-    public function testEachClosure() {
-        $object = new \Yard\Dom\Crawler($this->html_no_enc);
-        // test use of the closure to trim element values
-        $this->assertEquals(
-            array(
-                "PHP, Java, J2EE, SOLR, Tomcat",
-                "Java, J2EE, SOLR, Tomcat, JBoss",
-                "Java, J2EE, SOLR, Tomcat, JBoss"
-            ),
-            $object->query("//p[@class='skill']")->each(function($node){
-                return trim($node->nodeValue, " ,");
-            })
-        );
-    }
-
     public function testTrim() {
         $object = new \Yard\Dom\Crawler($this->html_no_enc);
         // test trim without params
@@ -93,6 +78,35 @@ class CrawlerTest extends PHPUnit_Framework_TestCase {
                 "Java, J2EE, SOLR, Tomcat, JBoss"
             ),
             $object->query("//p[@class='skill']")->trim(" ,")->toArray());
+    }
+
+    public function testReplace() {
+        $object = new \Yard\Dom\Crawler($this->html_no_enc);
+        $this->assertEquals(
+            array(
+                "PHP, JAVA@, J2EE, SOLR, Tomcat",
+                "JAVA@, J2EE, SOLR, Tomcat, JBoss ",
+                "JAVA@, J2EE, SOLR, Tomcat, JBoss, "
+            ),
+            $object->query("//p[@class='skill']")->replace("~Java~", "JAVA@")->toArray());
+    }
+
+    public function testFilter() {
+        $object = new \Yard\Dom\Crawler($this->html_no_enc);
+        $this->assertEquals(
+            array(
+//                "PHP, Java, J2EE, SOLR, Tomcat",
+                "Java, J2EE, SOLR, Tomcat, JBoss ",
+                "Java, J2EE, SOLR, Tomcat, JBoss, "
+            ),
+
+            $object->query("//p[@class='skill']")->filter(function(DOMNode $node){
+                if (false !== mb_stripos($node->nodeValue, "php")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            })->toArray());
     }
 
     public function testContext() {
