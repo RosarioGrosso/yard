@@ -339,6 +339,49 @@ class CrawlerTest extends PHPUnit_Framework_TestCase {
             $this->getPrivateProperty("\Yard\Dom\Crawler", "xpath")->getValue($object)
         );
     }
+    public function testLibxmlDisableEntityLoader() {
+        // test HTML
+        libxml_disable_entity_loader(true) ;
+        $object = new \Yard\Dom\Crawler($this->html_weibo, "UTF-8", \Yard\Dom\Crawler::TYPE_HTML);
+        // libxml_disable_entity_loader must be true 
+        $this->assertEquals( true , libxml_disable_entity_loader() );
+        libxml_disable_entity_loader(false) ;
+        $object = new \Yard\Dom\Crawler($this->html_weibo, "UTF-8", \Yard\Dom\Crawler::TYPE_HTML);
+        // libxml_disable_entity_loader must be false 
+        $this->assertEquals( false , libxml_disable_entity_loader() );
+        // Test XML 
+        libxml_disable_entity_loader(true) ;
+        $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec, "UTF-8", \Yard\Dom\Crawler::TYPE_XML);
+        // libxml_disable_entity_loader must be true 
+        $this->assertEquals( true , libxml_disable_entity_loader() );
+        libxml_disable_entity_loader(false) ;
+        $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec, "UTF-8", \Yard\Dom\Crawler::TYPE_XML);
+        // libxml_disable_entity_loader must be false 
+        $this->assertEquals( false , libxml_disable_entity_loader() );
+        
+
+    }
+    public function testLibxmlUseInternalErrorsPersistence() {
+        // test HTML
+        libxml_use_internal_errors(true) ;
+        $object = new \Yard\Dom\Crawler($this->html_weibo, "UTF-8", \Yard\Dom\Crawler::TYPE_HTML);
+        // libxml_use_internal_errors must be true 
+        $this->assertEquals( true , libxml_use_internal_errors() );
+        libxml_use_internal_errors(false) ;
+        $object = new \Yard\Dom\Crawler($this->html_weibo, "UTF-8", \Yard\Dom\Crawler::TYPE_HTML);
+        // libxml_use_internal_errors must be false 
+        $this->assertEquals( false , libxml_use_internal_errors() );
+        // Test XML 
+        libxml_use_internal_errors(true) ;
+        $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec, "UTF-8", \Yard\Dom\Crawler::TYPE_XML);
+        // libxml_use_internal_errors must be true 
+        $this->assertEquals( true , libxml_use_internal_errors() );
+        libxml_use_internal_errors(false) ;
+        $object = new \Yard\Dom\Crawler($this->xml_ns_root_dec, "UTF-8", \Yard\Dom\Crawler::TYPE_XML);
+        // libxml_use_internal_errors must be false 
+        $this->assertEquals( false , libxml_use_internal_errors() );
+
+    }
 
 
     /**
