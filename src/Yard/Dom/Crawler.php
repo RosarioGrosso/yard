@@ -330,8 +330,8 @@ class Crawler implements CrawlerInterface{
      * @return \DOMDocument
      */
     protected function getDomDocumentFromHtmlContent($content, $encoding) {
-        libxml_use_internal_errors(true);
-        libxml_disable_entity_loader(true);
+        $currentLibXmlUseInternalErrors = libxml_use_internal_errors(true);
+        $currentLibXmlDisableEntityLoader = libxml_disable_entity_loader(true);
 
         $dom = new \DOMDocument('1.0', $encoding);
         // @codeCoverageIgnoreStart
@@ -348,8 +348,8 @@ class Crawler implements CrawlerInterface{
         if ('' !== $content) {
             @$dom->loadHTML($content);
         }
-        libxml_use_internal_errors(false);
-        libxml_disable_entity_loader(false);
+        libxml_use_internal_errors($currentLibXmlUseInternalErrors);
+        libxml_disable_entity_loader($currentLibXmlDisableEntityLoader);
         return $dom;
     }
 
@@ -361,8 +361,8 @@ class Crawler implements CrawlerInterface{
      */
     protected function getDomDocumentFromXmlContent($content, $encoding) {
 
-        libxml_use_internal_errors(true);
-        libxml_disable_entity_loader(true);
+        $currentLibXmlUseInternalErrors = libxml_use_internal_errors(true);
+        $currentLibXmlDisableEntityLoader = libxml_disable_entity_loader(true);
 
         $dom = new \DOMDocument('1.0', $encoding);
         $content = trim($content);
@@ -370,8 +370,8 @@ class Crawler implements CrawlerInterface{
             $content = $this->removeDefaultNamespace($content);
             @$dom->loadXML($content, LIBXML_COMPACT|LIBXML_HTML_NODEFDTD|LIBXML_NONET|LIBXML_NSCLEAN);
         }
-        libxml_use_internal_errors(false);
-        libxml_disable_entity_loader(false);
+        libxml_use_internal_errors($currentLibXmlUseInternalErrors);
+        libxml_disable_entity_loader($currentLibXmlDisableEntityLoader);
         return $dom;
     }
 
