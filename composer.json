@@ -1,5 +1,5 @@
 {
-    "name": "RosarioGrosso/Yard",
+    "name": "rosariogrosso/yard",
     "type": "library",
     "description": "Yard is a collection (Library) of powerful command line tools for data mining, crawling, extraction.",
     "keywords": ["crawler", "crawling", "http client", "data extraction", "data mining", "url normalization"],
